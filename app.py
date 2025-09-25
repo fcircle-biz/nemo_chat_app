@@ -99,24 +99,25 @@ with col1:
     # 入力欄（下部）
     st.markdown("---")
 
-    # 送信ボタンと設定を上に配置
-    col_settings, col_send = st.columns([2, 1])
+    # メッセージ入力と送信ボタンを上に配置
+    col_input, col_send = st.columns([4, 1])
 
-    with col_settings:
-        with st.expander("⚙️ 詳細設定"):
-            max_tokens = st.slider("最大トークン数", 50, 5000, 2000)
-            temperature = st.slider("創造性（Temperature）", 0.0, 1.0, 0.7, 0.1)
-            top_p = st.slider("語彙選択幅（Top-p）", 0.0, 1.0, 0.9, 0.1)
+    with col_input:
+        user_input = st.text_input(
+            "メッセージを入力してください：",
+            placeholder="例：自己紹介をお願いします。",
+            key="user_input"
+        )
 
     with col_send:
+        st.markdown("<br>", unsafe_allow_html=True)  # 高さ調整用の改行
         send_button = st.button("📤 送信", type="primary")
 
-    # メッセージ入力（最下部）
-    user_input = st.text_input(
-        "メッセージを入力してください：",
-        placeholder="例：自己紹介をお願いします。",
-        key="user_input"
-    )
+    # 詳細設定を下に配置
+    with st.expander("⚙️ 詳細設定"):
+        max_tokens = st.slider("最大トークン数", 50, 5000, 2000)
+        temperature = st.slider("創造性（Temperature）", 0.0, 1.0, 0.7, 0.1)
+        top_p = st.slider("語彙選択幅（Top-p）", 0.0, 1.0, 0.9, 0.1)
 
 # チャット処理
 if send_button and user_input:
@@ -134,7 +135,7 @@ if send_button and user_input:
 
     try:
         with st.spinner("🤖 AI が返答を生成中..."):
-            response = requests.post("http://localhost:8080/chat", json=payload, timeout=30)
+            response = requests.post("http://localhost:8080/chat", json=payload, timeout=120)
 
         if response.status_code == 200:
             response_data = response.json()
@@ -156,7 +157,7 @@ if send_button and user_input:
             st.error(f"🚫 サーバーエラー: {response.status_code}")
 
     except requests.exceptions.Timeout:
-        st.error("⏰ リクエストタイムアウト（30秒）。もう一度お試しください。")
+        st.error("⏰ リクエストタイムアウト（120秒）。サーバーが応答しません。")
     except requests.exceptions.RequestException as e:
         st.error(f"🔌 接続エラー: {e}")
     except Exception as e:
